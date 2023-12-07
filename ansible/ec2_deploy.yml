@@ -44,7 +44,7 @@
       become: yes
     - name: Start docker on startup
       shell: systemctl enable docker
-      becoma: yes
+      become: yes
     - name: set rights to docker
       shell: usermod -a -G docker ec2-user
       become: yes
@@ -54,7 +54,7 @@
         dest: ./app
     - name: Build docker with eshop
       shell: cd app && docker build -t myeshop:latest .
-      becooma: yes
+      become: yes
     - name: run docker with eshop
       shell: docker run -p 80:3000 myeshop
       async: 45
