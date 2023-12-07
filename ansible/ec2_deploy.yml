@@ -8,7 +8,7 @@
         instance_type: t2.medium
         image_id: ami-0230bd60aa48260c6
         region: us-east-1
-        key_name: test
+        key_name: "test"
         vpc_subnet_id: subnet-0ed735687b3e7deff
         network:
           assign_public_ip: yes
@@ -24,12 +24,14 @@
         hostname: "{{ item.public_ip_address }}"
         groupname: launched
       loop: "{{ ec2_instance_result.instances }}"
+      when: item.state.code == 0
     - name: Wait for ssh
       delegate_to: "{{item.public_ip_address}}"
       wait_for_connection:
-        delay: 30
+        delay: 240
         timeout: 300
       loop: "{{ec2_instance_result.instances}}"
+      when: item.state.code == 0
 
 - name: Config EC2
   hosts: launched
@@ -59,7 +61,9 @@
         repo: "https://github.com/random-accnt/4IT572_docker.git"
         dest: ./app
     - name: Build docker with eshop
-      shell: cd app && docker build -t myeshop:latest .
+      shell: |
+        cd app
+        docker build -t myeshop:latest .
       become: yes
     - name: run docker with eshop
       shell: docker run -p 80:3000 myeshop
