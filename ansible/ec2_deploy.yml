@@ -3,33 +3,33 @@
   connection: local
 
   tasks:
-  - name: Launch EC2 instance
-    ec2_instance:
-      instance_type: t2.micro
-      image_id: ami-0230bd60aa48260c6
-      region: us-east-1
-      key_name: test
-      vpc_subnet_id: subnet-025f2a1806a64a65b
-      count: 1
-      group: Eshop
-      network:
-        assign_public_ip: yes
-      wait: yes
-      aws_access_key: "{{access_key}}"
-      aws_secret_key: "{{secret_key}}"
-      security_token: "{{session_token}}"
-    register: ec2
-  - name: Add instance host to group
-    add_host:
-      hostname: "{{item.public_id}}"
-      group_name: launched
-    loop: "{{ec2.instances}}"
-  - name: Wait for ssh
-    delegate_to: "{{item.public_ip}}"
-    wait_for_connection:
-      delay: 30
-      timeout: 300
-    loop: "{{ec2.instances}}"
+    - name: Launch EC2 instance
+      ec2_instance:
+        instance_type: t2.micro
+        image_id: ami-0230bd60aa48260c6
+        region: us-east-1
+        key_name: test
+        vpc_subnet_id: subnet-025f2a1806a64a65b
+        count: 1
+        security_group: Eshop
+        network:
+          assign_public_ip: yes
+        wait: yes
+        aws_access_key: "{{access_key}}"
+        aws_secret_key: "{{secret_key}}"
+        security_token: "{{session_token}}"
+      register: ec2_instance_result
+    - name: Add instance host to group
+      add_host:
+        hostname: "{{item.public_id}}"
+        group_name: launched
+      loop: "{{ec2_instance_result.instances}}"
+    - name: Wait for ssh
+      delegate_to: "{{item.public_ip_address}}"
+      wait_for_connection:
+        delay: 30
+        timeout: 300
+      loop: "{{ec2_instance_result.instances}}"
 
 - name: Config EC2
   hosts: launched
